@@ -23,31 +23,11 @@ export const StepperWrapper = styled(Box)`
 const StepperPage = () => {
 
 
-
-
-    const initialAnsweState = {
-        answer1: null,
-        answer2: null,
-        answer3: null,
-        answer4: null,
-    };
-
-    const [answer, setAnswer] = useState(initialAnsweState);
-
-
-    const handleAnswerChange = (e) => {
-        setAnswer({ ...answer, [e.target.name]: e.target.value });
-        console.log(answer);
-
-    }
-
-
     const [fullName, setFullName] = React.useState("");
     const [dateOfBirth, setDateOfBirth] = React.useState(null);
     const [phone, setPhone] = React.useState("");
     const [email, setEmail] = React.useState("");
     const [errors, setErrors] = React.useState({});
-    const [radioErr, setRadioErr] = useState(false);
     const validateEmail = (email) => {
         return /\S+@\S+\.\S+/.test(email);
     };
@@ -78,29 +58,20 @@ const StepperPage = () => {
     const steps = ['Answer Questions', 'Fill Form'];
     const [activeStep, setActiveStep] = React.useState(0);
 
-    const handleNext = () => {
-        console.log(radioErr);
-        console.log(answer);
-        if (activeStep === 0 && radioErr === false) {
-            // if (answer.answer1 !== null) {
-            //     setRadioErr(false)
-            // } else if (answer.answer2 !== null) {
-            //     setRadioErr(false)
-            // } else if (answer.answer3 !== null) {
-            //     setRadioErr(false)
-            // } else if (answer.answer4 !== null) {
-            //     setRadioErr(false)
-            // } else {
-            //     setRadioErr(true)
-            // }
-            // return;
 
+    const handleNext = () => {
+        newErrors = {};
+        questions.forEach((question) => {
+            handleValidation(null, question)
+        });
+        setErrors(newErrors);
+
+        if (Object.keys(newErrors).length === 0) {
+            console.log(newErrors)
+            setActiveStep((prevActiveStep) => prevActiveStep + 1);
         }
-        if (activeStep === 1 && !validateFields()) {
-            return;
-        }
-        setActiveStep((prevActiveStep) => prevActiveStep + 1);
     };
+
 
     const handleSubmit = () => {
         if (!validateFields()) {
@@ -108,52 +79,17 @@ const StepperPage = () => {
         }
 
         setActiveStep((prevActiveStep) => prevActiveStep + 1);
-        var data = {
-            "fields": [
-                {
-                    "name": "question_1",
-                    "value": answer.answer1
-                },
-                {
-                    "name": "question_2",
-                    "value": answer.answer2
-                },
-                {
-                    "name": "question_3",
-                    "value": answer.answer3
-                },
-                {
-                    "name": "question_4",
-                    "value": answer.answer4
-                },
-                {
-                    "name": "full_name",
-                    "value": fullName
-                },
-                {
-                    "name": "date_of_birth",
-                    "value": dateOfBirth
-                },
-                {
-                    "name": "phone",
-                    "value": phone
-                },
-                {
-                    "name": "email",
-                    "value": email
-                },
-
-            ],
-        }
 
         // axios({
         //     method: 'post',
-        //     url: `https://api.hsforms.com/submissions/v3/integration/submit/${'43592916'}/${'49715623-b50f-444b-b38e-61df1191ffb0'}`,
+        //     url: `https://api.hsforms.com/submissions/v3/integration/submit/${'46359715'}/${'e74cd6a7-deec-473b-9026-c1452d0f5c87'}`,
         //     data: JSON.stringify(data), // you are sending body instead
         //     headers: {
         //         'Content-Type': 'application/json'
         //     },
         // })
+
+        console.log(formData);
     };
 
     const handleBack = () => {
@@ -164,6 +100,130 @@ const StepperPage = () => {
         setActiveStep(0);
     };
 
+
+    // questions
+
+    const questions = [
+        {
+            "name": "question_1",
+            "options": [{ title: "Yes", value: true }, { title: "No", value: false }],
+            SubQPresent: true,
+            showSubQOn: { title: "Yes", value: true },
+            subQ: [
+                {
+                    "name": "Sub question_11",
+                    "options": [{ title: "Yes", value: true }, { title: "No", value: false }
+                    ],
+                    SubQPresent: true,
+                    showSubQOn: { title: "Yes", value: true },
+                    subQ: [
+                        {
+                            "name": "Sub Sub question_111",
+                            "options": [{ title: "Yes", value: true }, { title: "No", value: false }
+                            ],
+                        },
+                        {
+                            "name": "Sub Sub question_112",
+                            "options": [{ title: "Yes", value: true }, { title: "No", value: false }
+                            ],
+                        }
+                    ]
+                },
+                {
+                    "name": "Sub question_12",
+                    "options": [{ title: "Yes", value: true }, { title: "No", value: false }
+                    ],
+                }
+            ]
+        },
+        {
+            "name": "question_2",
+            "options": [{ title: "Yes", value: true }, { title: "No", value: false }
+            ],
+            SubQPresent: true,
+            showSubQOn: { title: "Yes", value: true },
+            subQ: [
+                {
+                    "name": "Sub question_21",
+                    "options": [{ title: "Yes", value: true }, { title: "No", value: false }
+                    ],
+                },
+                {
+                    "name": "Sub question_22",
+                    "options": [{ title: "Yes", value: true }, { title: "No", value: false }
+                    ],
+                }
+            ]
+        }
+    ]
+    const [formData, setFormData] = useState({});
+
+    const handleAnswerChange = (questionName, answer) => {
+        setFormData((prevData) => ({
+            ...prevData,
+            [questionName]: answer,
+        }));
+    };
+
+    let newErrors = {};
+    const handleValidation = (ParentQuestion, currentQuestion) => {
+        if (ParentQuestion == null) {
+            if (formData[currentQuestion.name] === null || formData[currentQuestion.name] === undefined) {
+                newErrors[currentQuestion.name] = 'This field is required.';
+            }
+        } else {
+            if (formData[ParentQuestion.name] === ParentQuestion.showSubQOn.value) {
+                if (formData[currentQuestion.name] === null || formData[currentQuestion.name] === undefined) {
+                    newErrors[currentQuestion.name] = 'This field is required.';
+                }
+            }
+        }
+
+        if (currentQuestion.SubQPresent) {
+            currentQuestion.subQ.forEach((subQuestion) => {
+                handleValidation(currentQuestion, subQuestion);
+            });
+        }
+    }
+
+
+    const renderSubQuestions = (subQArray) => {
+        return subQArray.map((subQ) => (
+            // <Box key={subQ.name}>
+            //     <label>{subQ.name}</label>
+            //     {subQ.options.map((option) => (
+            //         <Box key={option.title}>
+            //             <input
+            //                 type="radio"
+            //                 name={subQ.name}
+            //                 value={option.value}
+            //                 onChange={() => handleAnswerChange(subQ.name, option.value)}
+            //             />
+            //             {option.title}
+            //         </Box>
+            //     ))}
+            //     {errors[subQ.name] && <span style={{ color: 'red' }}>{errors[subQ.name]}</span>}
+            //     {formData[subQ.name] && subQ.subQ && renderSubQuestions(subQ.subQ)}
+            // </Box>
+            <Box className="eachQuestion">
+                <FormControl>
+                    <FormLabel >{subQ.name}</FormLabel>
+                    <RadioGroup
+                        row
+                        aria-labelledby="question-one-label"
+                        name="answer1"
+                    >
+                         {subQ.options.map((option) => (
+                            <FormControlLabel value={option.value} control={<Radio />} label={option.title}  onChange={() => handleAnswerChange(subQ.name, option.value)} />
+                        ))}
+
+                    </RadioGroup>
+                </FormControl>
+                {errors[subQ.name] && <Typography variant='body1' style={{ color: 'red' }}>{errors[subQ.name]}</Typography>}
+                {formData[subQ.name] && subQ.subQ && renderSubQuestions(subQ.subQ)}
+            </Box>
+        ));
+    };
     return (
         <StepperWrapper>
             <Box className="stepperInner">
@@ -182,101 +242,45 @@ const StepperPage = () => {
                     <React.Fragment>
                         {activeStep === 0 ?
                             <Box className="stepOne stepBox">
-                                <Box className="eachQuestion">
-                                    <FormControl error={!!errors.answer}>
-                                        <FormLabel >Question One</FormLabel>
-                                        <RadioGroup
-                                            row
-                                            aria-labelledby="question-one-label"
-                                            name="answer1"
-                                            onChange={(e) => { setAnswer({ ...answer, [e.target.name]: e.target.value }); answer.answer1 !== null ? setRadioErr(true) : setRadioErr(false); }}
 
-                                        >
-                                            <FormControlLabel value="yes" control={<Radio />} label="Yes" />
-                                            <FormControlLabel value="no" control={<Radio />} label="No" />
-                                        </RadioGroup>
-                                        {
-                                            radioErr === true ? "Please answer the question" : ""
-                                        }
-                                    </FormControl>
+                                <Box>
+                                    {questions.map((question) => (
+                                        // <Box key={question.name}>
+                                        //     <label>{question.name}</label>
+                                        //     {question.options.map((option) => (
+                                        //         <Box key={option.title}>
+                                        //             <input
+                                        //                 type="radio"
+                                        //                 name={question.name}
+                                        //                 value={option.value}
+                                        //                 onChange={() => handleAnswerChange(question.name, option.value)}
+                                        //             />
+                                        //             {option.title}
+                                        //         </Box>
+                                        //     ))}
+                                        //     {errors[question.name] && <span style={{ color: 'red' }}>{errors[question.name]}</span>}
+                                        //     {formData[question.name] && question.subQ && renderSubQuestions(question.subQ)}
+                                        // </Box>
+                                        <Box className="eachQuestion" key={question.name}>
+                                            <FormControl>
+                                                <FormLabel >{question.name}</FormLabel>
+                                                <RadioGroup
+                                                    row
+                                                    aria-labelledby="question-one-label"
+                                                    name="answer1"
+                                                >
+                                                    {question.options.map((option) => (
+                                                        <FormControlLabel value={option.value} control={<Radio />} label={option.title} onChange={() => handleAnswerChange(question.name, option.value)} />
+                                                    ))}
+
+                                                </RadioGroup>
+                                            </FormControl>
+                                            {errors[question.name] && <Typography variant='body1' style={{ color: 'red' }}>{errors[question.name]}</Typography>}
+                                            {formData[question.name] && question.subQ && renderSubQuestions(question.subQ)}
+                                        </Box>
+
+                                    ))}
                                 </Box>
-
-                                {
-                                    answer.answer1 === "yes" &&
-                                    <Box className="eachQuestion">
-                                        <FormControl>
-                                            <FormLabel >Sub Question 1 : Question 1</FormLabel>
-                                            <RadioGroup
-                                                row
-                                                aria-labelledby="question-one-label"
-                                                name="answer2"
-                                                onChange={(e) => { setAnswer({ ...answer, [e.target.name]: e.target.value }); answer.answer2 !== null ? setRadioErr(true) : setRadioErr(false); }}
-                                            >
-                                                <FormControlLabel value="yes" control={<Radio />} label="Yes" />
-                                                <FormControlLabel value="no" control={<Radio />} label="No" />
-                                            </RadioGroup>
-                                            {
-                                                radioErr === true ? "Please answer the question" : ""
-                                            }
-                                        </FormControl>
-                                    </Box>
-                                }
-                                {
-                                    answer.answer2 === "yes" &&
-                                    <Box className="eachQuestion">
-                                        <FormControl>
-                                            <FormLabel >Sub Question 2 : Question 1</FormLabel>
-                                            <RadioGroup
-                                                row
-                                                aria-labelledby="question-one-label"
-                                                name="answer3"
-                                                onChange={(e) => { setAnswer({ ...answer, [e.target.name]: e.target.value }); answer.answer3 !== null ? setRadioErr(true) : setRadioErr(false); }}
-                                            >
-                                                <FormControlLabel value="yes" control={<Radio />} label="Yes" />
-                                                <FormControlLabel value="no" control={<Radio />} label="No" />
-                                            </RadioGroup>
-                                            {
-                                                radioErr === true ? "Please answer the question" : ""
-                                            }
-                                        </FormControl>
-                                    </Box>
-                                }
-
-                                <Box className="eachQuestion">
-                                    <FormControl>
-                                        <FormLabel >Question Two</FormLabel>
-                                        <RadioGroup
-                                            row
-                                            aria-labelledby="question-one-label"
-                                            name="answer4"
-                                            onChange={(e) => { setAnswer({ ...answer, [e.target.name]: e.target.value }); answer.answer4 !== null ? setRadioErr(true) : setRadioErr(false); }}
-                                        >
-                                            <FormControlLabel value="yes" control={<Radio />} label="Yes" />
-                                            <FormControlLabel value="no" control={<Radio />} label="No" />
-                                        </RadioGroup>
-                                        {
-                                            radioErr === true ? "Please answer the question" : ""
-                                        }
-                                    </FormControl>
-                                </Box>
-                                <Box className="eachQuestion">
-                                    <FormControl>
-                                        <FormLabel >Question Three</FormLabel>
-                                        <RadioGroup
-                                            row
-                                            aria-labelledby="question-one-label"
-                                            name="answer4"
-                                            onChange={handleAnswerChange}
-                                        >
-                                            <FormControlLabel value="yes" control={<Radio />} label="Yes" />
-                                            <FormControlLabel value="no" control={<Radio />} label="No" />
-                                        </RadioGroup>
-                                        {
-                                            radioErr === true ? "Please answer the question" : ""
-                                        }
-                                    </FormControl>
-                                </Box>
-
 
                             </Box>
                             :
