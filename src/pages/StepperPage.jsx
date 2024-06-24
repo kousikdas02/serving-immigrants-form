@@ -214,7 +214,7 @@ const StepperPage = () => {
                         name="answer1"
                     >
                          {subQ.options.map((option) => (
-                            <FormControlLabel value={option.value} control={<Radio />} label={option.title}  onChange={() => handleAnswerChange(subQ.name, option.value)} />
+                            <FormControlLabel key={option.title} value={option.value} control={<Radio />} label={option.title}  onChange={() => handleAnswerChange(subQ.name, option.value)} />
                         ))}
 
                     </RadioGroup>
@@ -270,7 +270,7 @@ const StepperPage = () => {
                                                     name="answer1"
                                                 >
                                                     {question.options.map((option) => (
-                                                        <FormControlLabel value={option.value} control={<Radio />} label={option.title} onChange={() => handleAnswerChange(question.name, option.value)} />
+                                                        <FormControlLabel key={option.title} value={option.value} control={<Radio />} label={option.title} onChange={() => handleAnswerChange(question.name, option.value)} />
                                                     ))}
 
                                                 </RadioGroup>
